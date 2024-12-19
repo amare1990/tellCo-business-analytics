@@ -1,5 +1,7 @@
-# Ignore python and jupyter notebook cache files
+# Ignore environmental variables
+.env
 
+# Ignore python and jupyter notebook cache files
 venv-tellCo/
 __pycache__/
 *.pyc
@@ -14,5 +16,6 @@ notebooks/plots/
 
 # Ignore visualizations
 visualizations/
+
 
 
