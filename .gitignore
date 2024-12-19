@@ -1,6 +1,6 @@
 # Ignore python and jupyter notebook cache files
 
-venv-stock/
+venv-tellCo/
 __pycache__/
 *.pyc
 *.pyo
