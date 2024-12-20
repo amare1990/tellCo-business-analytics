@@ -271,3 +271,34 @@ class ExploratoryDataAnalysis:
             plt.xlabel(col)
             plt.ylabel('Frequency')
             plt.show()
+
+
+    def bivariate_analysis(self):
+        """
+        Perform bivariate analysis by exploring the relationship between each application and the total DL+UL data.
+        """
+        df, _ = self.variable_transformations()
+
+        # Define applications with corresponding DL and UL columns
+        applications = {
+            'Social Media': ['Social Media DL (Bytes)', 'Social Media UL (Bytes)'],
+            'Google': ['Google DL (Bytes)', 'Google UL (Bytes)'],
+            'Email': ['Email DL (Bytes)', 'Email UL (Bytes)'],
+            'YouTube': ['Youtube DL (Bytes)', 'Youtube UL (Bytes)'],
+            'Netflix': ['Netflix DL (Bytes)', 'Netflix UL (Bytes)'],
+            'Gaming': ['Gaming DL (Bytes)', 'Gaming UL (Bytes)'],
+            'Other': ['Other DL (Bytes)', 'Other UL (Bytes)']
+        }
+
+        for app, columns in applications.items():
+            # Calculate total application data (DL + UL)
+            df[f'{app} Total'] = df[columns[0]] + df[columns[1]]
+
+            # Plot the relationship between application data and total data (DL+UL)
+            plt.figure(figsize=(10, 6))
+            sns.scatterplot(x=df[f'{app} Total'], y=df['Total DL (Bytes)'] + df['Total UL (Bytes)'])
+            plt.title(f'Relationship between {app} and Total Data (DL+UL)')
+            plt.xlabel(f'{app} Data (DL + UL)')
+            plt.ylabel('Total Data (DL + UL)')
+            plt.show()
+
