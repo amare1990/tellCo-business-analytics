@@ -302,3 +302,39 @@ class ExploratoryDataAnalysis:
             plt.ylabel('Total Data (DL + UL)')
             plt.show()
 
+    def correlation_analysis(self):
+        """
+        Compute and interpret the correlation matrix for the given application data.
+        """
+        df, _ = self.variable_transformations()
+
+
+        # Define applications with corresponding DL and UL columns
+        applications = {
+            'Social Media': ['Social Media DL (Bytes)', 'Social Media UL (Bytes)'],
+            'Google': ['Google DL (Bytes)', 'Google UL (Bytes)'],
+            'Email': ['Email DL (Bytes)', 'Email UL (Bytes)'],
+            'YouTube': ['Youtube DL (Bytes)', 'Youtube UL (Bytes)'],
+            'Netflix': ['Netflix DL (Bytes)', 'Netflix UL (Bytes)'],
+            'Gaming': ['Gaming DL (Bytes)', 'Gaming UL (Bytes)'],
+            'Other': ['Other DL (Bytes)', 'Other UL (Bytes)']
+        }
+
+        # Calculate total data for each application
+        for app, columns in applications.items():
+            df[f'{app} Total'] = df[columns[0]] + df[columns[1]]
+
+        # Compute the total DL+UL data (for correlation with all applications)
+        df['Total Data (DL+UL)'] = df['Total DL (Bytes)'] + df['Total UL (Bytes)']
+
+        # Define the columns to compute correlation for
+        correlation_cols = [f'{app} Total' for app in applications] + ['Total Data (DL+UL)']
+
+        # Compute the correlation matrix
+        corr_matrix = df[correlation_cols].corr()
+
+        # Plot the correlation heatmap
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+        plt.title('Correlation Matrix')
+        plt.show()
