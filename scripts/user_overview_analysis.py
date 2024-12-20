@@ -4,6 +4,10 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -183,154 +187,34 @@ class UserOverviewAnalyzer:
             return None
 
 
+
 class ExploratoryDataAnalysis:
-    def __init__(self, db_host, db_port, db_name, db_user, db_password):
-        # Initialize database connection parameters
-        self.db_host = db_host
-        self.db_port = db_port
-        self.db_name = db_name
-        self.db_user = db_user
-        self.db_password = db_password
+    def __init__(self):
+        self.user_overview = UserOverviewAnalyzer()
+        self.df = self.load_data()  # Load the data once during initialization
 
-    def load_data_from_postgres(self, query):
-        """
-        Connects to the PostgreSQL database and loads data based on the provided SQL query.
+    def load_data(self):
+        query = "SELECT * FROM xdr_data"
+        df = self.user_overview.load_data_from_postgres(query)
+        return df
 
-        :param query: SQL query to execute.
-        :return: DataFrame containing the results of the query.
-        """
-        try:
-            # Create an SQLAlchemy engine for PostgreSQL
-            engine = create_engine(f'postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}')
-
-            # Load data using pandas
-            df = pd.read_sql_query(query, engine)
-
-            return df
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
-
-    def treat_missing_values(self, df):
+    def treat_missing_values(self):
         """
         Treats missing values in the dataset by replacing them with the mean (or other appropriate methods).
 
-        :param df: The DataFrame containing the dataset.
         :return: DataFrame with missing values treated.
         """
+        df = self.df.copy()  # Work with a copy to preserve the original
+        # Remove duplicates
+        df.drop_duplicates(inplace=True)
         # Replace missing values with mean for numerical columns
-        df.fillna(df.mean(), inplace=True)
+        # Replace missing values for numerical columns with their mean
+        numerical_columns = df.select_dtypes(include=['number']).columns
+        df[numerical_columns] = df[numerical_columns].fillna(df[numerical_columns].mean())
+
+        # Replace missing values for non-numerical columns with a placeholder (e.g., 'Unknown')
+        non_numerical_columns = df.select_dtypes(exclude=['number']).columns
+        df[non_numerical_columns] = df[non_numerical_columns].fillna('Unknown')
+
         return df
 
-    def variable_transformations(self, df):
-        """
-        Segment users into deciles based on total session duration and compute total data (DL+UL) per decile class.
-
-        :param df: The DataFrame containing the dataset.
-        :return: DataFrame with transformations and deciles.
-        """
-        # Segment users into top 5 decile classes based on total session duration
-        df['decile'] = pd.qcut(df['total_duration'], 5, labels=False) + 1
-
-        # Compute total data (DL + UL) per decile class
-        df['total_data'] = df['total_dl'] + df['total_ul']
-        decile_data = df.groupby('decile').agg({'total_data': 'sum'}).reset_index()
-
-        return df, decile_data
-
-    def basic_metrics(self, df):
-        """
-        Compute basic metrics (mean, median, etc.) for the dataset.
-
-        :param df: The DataFrame containing the dataset.
-        :return: Basic descriptive statistics.
-        """
-        return df.describe()
-
-    def univariate_analysis(self, df):
-        """
-        Conduct non-graphical univariate analysis by computing dispersion parameters for each quantitative variable.
-
-        :param df: The DataFrame containing the dataset.
-        :return: Dispersion parameters for each variable.
-        """
-        dispersion = df.var()  # Variance (dispersion)
-        return dispersion
-
-    def graphical_univariate_analysis(self, df):
-        """
-        Conduct a graphical univariate analysis using histograms for each relevant variable.
-
-        :param df: The DataFrame containing the dataset.
-        """
-        quantitative_cols = ['total_duration', 'total_dl', 'total_ul', 'total_data']
-
-        for col in quantitative_cols:
-            plt.figure(figsize=(10, 6))
-            sns.histplot(df[col], kde=True)
-            plt.title(f'Histogram of {col}')
-            plt.xlabel(col)
-            plt.ylabel('Frequency')
-            plt.show()
-
-    def bivariate_analysis(self, df):
-        """
-        Perform bivariate analysis by exploring the relationship between each application and the total DL+UL data.
-
-        :param df: The DataFrame containing the dataset.
-        """
-        applications = ['Social Media', 'Google', 'Email', 'YouTube', 'Netflix', 'Gaming', 'Other']
-        for app in applications:
-            plt.figure(figsize=(10, 6))
-            sns.scatterplot(x=df[app], y=df['total_data'])
-            plt.title(f'Relationship between {app} and Total Data (DL+UL)')
-            plt.xlabel(f'{app} Data')
-            plt.ylabel('Total Data (DL + UL)')
-            plt.show()
-
-    def correlation_analysis(self, df):
-        """
-        Compute and interpret the correlation matrix for the given application data.
-
-        :param df: The DataFrame containing the dataset.
-        """
-        correlation_cols = ['Social Media', 'Google', 'Email', 'YouTube', 'Netflix', 'Gaming', 'Other']
-        corr_matrix = df[correlation_cols].corr()
-
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
-        plt.title('Correlation Matrix')
-        plt.show()
-
-    def dimensionality_reduction(self, df):
-        """
-        Perform Principal Component Analysis (PCA) to reduce the dimensionality of the dataset and interpret results.
-
-        :param df: The DataFrame containing the dataset.
-        """
-        # Standardizing the data before applying PCA
-        from sklearn.preprocessing import StandardScaler
-        features = ['total_duration', 'total_dl', 'total_ul', 'total_data']
-        x = df[features]
-        x_scaled = StandardScaler().fit_transform(x)
-
-        # PCA transformation
-        pca = PCA(n_components=2)
-        principal_components = pca.fit_transform(x_scaled)
-        pca_df = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])
-
-        plt.figure(figsize=(8, 6))
-        plt.scatter(pca_df['PC1'], pca_df['PC2'])
-        plt.title('PCA - Dimensionality Reduction')
-        plt.xlabel('Principal Component 1')
-        plt.ylabel('Principal Component 2')
-        plt.show()
-
-        # PCA interpretation
-        explained_variance = pca.explained_variance_ratio_
-        print("PCA Interpretation:")
-        print(f"1. PC1 explains {explained_variance[0]*100:.2f}% of the variance.")
-        print(f"2. PC2 explains {explained_variance[1]*100:.2f}% of the variance.")
-        print("3. The data is reduced to two principal components for easy visualization.")
-        print("4. PCA highlights the most influential variables in the dataset.")
