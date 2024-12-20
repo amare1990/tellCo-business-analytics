@@ -104,3 +104,54 @@ class user_overview_analyzer:
 
         return analysis_results
 
+    def user_behavior_analysis(self):
+        """
+        Aggregates user behavior data:
+        - Number of xDR sessions
+        - Session duration (in seconds)
+        - Total download (DL) and upload (UL) data (in Bytes)
+        - Total data volume (in Bytes) during each session for each application
+        """
+        query = """
+            SELECT
+                "IMSI" AS user_id,
+                CASE
+                    WHEN "Social Media DL (Bytes)" > 0 OR "Social Media UL (Bytes)" > 0 THEN 'Social Media'
+                    WHEN "Gaming DL (Bytes)" > 0 OR "Gaming UL (Bytes)" > 0 THEN 'Gaming'
+                    WHEN "YouTube DL (Bytes)" > 0 OR "YouTube UL (Bytes)" > 0 THEN 'YouTube'
+                    WHEN "Netflix DL (Bytes)" > 0 OR "Netflix UL (Bytes)" > 0 THEN 'Netflix'
+                    WHEN "Google DL (Bytes)" > 0 OR "Google UL (Bytes)" > 0 THEN 'Google'
+                    ELSE 'Other'
+                END AS application,
+                COUNT("bearer id") AS session_count,
+                SUM("Dur. (s)") AS total_duration,
+                SUM("Total DL (Bytes)") AS total_download,
+                SUM("Total UL (Bytes)") AS total_upload,
+                SUM("Total DL (Bytes)" + "Total UL (Bytes)") AS total_data_volume
+            FROM
+                xdr_data
+            GROUP BY
+                "IMSI", application
+            """
+
+        df = self.load_data_from_postgres(query)
+
+        if df is not None and not df.empty:
+            # Summarize aggregated data per user
+            aggregated_data = df.groupby('user_id').agg(
+                num_sessions=('session_count', 'sum'),
+                total_duration=('total_duration', 'sum'),
+                total_download=('total_download', 'sum'),
+                total_upload=('total_upload', 'sum'),
+                total_data_volume=('total_data_volume', 'sum')
+            ).reset_index()
+
+            # Display aggregated data
+            print("User Behavior Analysis:")
+            print(aggregated_data)
+
+            # Optional: Return the DataFrame for further processing
+            return aggregated_data
+        else:
+            print("No data available for user behavior analysis.")
+            return None
