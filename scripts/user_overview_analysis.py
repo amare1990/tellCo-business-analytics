@@ -224,7 +224,7 @@ class ExploratoryDataAnalysis:
 
         :return: DataFrame with transformations and deciles.
         """
-        df = self.df.copy()  # Work with a copy to preserve the original
+        df = self.treat_missing_values()
         # Segment users into top 5 decile classes based on total session duration
         df['total_duration'] = df['Dur. (ms)']  # or df['Dur. (ms).1']
         df['decile'] = pd.qcut(df['total_duration'], 5, labels=False) + 1
@@ -241,4 +241,18 @@ class ExploratoryDataAnalysis:
 
         :return: Basic descriptive statistics.
         """
-        return self.df.describe()
+        df = self.treat_missing_values()
+
+        return df.describe()
+
+    def univariate_analysis(self):
+        """
+        Conduct non-graphical univariate analysis by computing dispersion parameters for each quantitative variable.
+
+        :return: Dispersion parameters for each variable.
+        """
+        df, _ = self.variable_transformations()
+        # Select only numeric columns for variance calculation
+        numeric_df = df.select_dtypes(include='number')
+
+        return numeric_df.var()  # Variance (dispersion)
