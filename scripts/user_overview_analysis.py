@@ -234,3 +234,11 @@ class ExploratoryDataAnalysis:
         decile_data = df.groupby('decile').agg({'total_data': 'sum'}).reset_index()
 
         return df, decile_data
+
+    def basic_metrics(self):
+        """
+        Compute basic metrics (mean, median, etc.) for the dataset.
+
+        :return: Basic descriptive statistics.
+        """
+        return self.df.describe()
