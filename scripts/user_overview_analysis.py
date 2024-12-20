@@ -218,3 +218,19 @@ class ExploratoryDataAnalysis:
 
         return df
 
+    def variable_transformations(self):
+        """
+        Segment users into deciles based on total session duration and compute total data (DL+UL) per decile class.
+
+        :return: DataFrame with transformations and deciles.
+        """
+        df = self.df.copy()  # Work with a copy to preserve the original
+        # Segment users into top 5 decile classes based on total session duration
+        df['total_duration'] = df['Dur. (ms)']  # or df['Dur. (ms).1']
+        df['decile'] = pd.qcut(df['total_duration'], 5, labels=False) + 1
+
+        # Compute total data (DL + UL) per decile class
+        df['total_data'] = df["Total DL (Bytes)"] + df["Total UL (Bytes)"]
+        decile_data = df.groupby('decile').agg({'total_data': 'sum'}).reset_index()
+
+        return df, decile_data
