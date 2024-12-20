@@ -256,3 +256,18 @@ class ExploratoryDataAnalysis:
         numeric_df = df.select_dtypes(include='number')
 
         return numeric_df.var()  # Variance (dispersion)
+
+    def graphical_univariate_analysis(self):
+        """
+        Conduct a graphical univariate analysis using histograms for each relevant variable.
+        """
+        df, _ = self.variable_transformations()
+        quantitative_cols = ['total_duration', "Total DL (Bytes)", "Total UL (Bytes)", 'total_data']
+
+        for col in quantitative_cols:
+            plt.figure(figsize=(10, 6))
+            sns.histplot(df[col], kde=True)
+            plt.title(f'Histogram of {col}')
+            plt.xlabel(col)
+            plt.ylabel('Frequency')
+            plt.show()
