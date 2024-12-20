@@ -116,7 +116,7 @@ class ExploratoryDataAnalysis:
 
         for col in quantitative_cols:
             plt.figure(figsize=(10, 6))
-            sns.histplot(df[col], kde=True)
+            sns.barplot(df[col], kde=True)
             plt.title(f'Histogram of {col}')
             plt.xlabel(col)
             plt.ylabel('Frequency')
@@ -146,7 +146,7 @@ class ExploratoryDataAnalysis:
 
             # Plot the relationship between application data and total data (DL+UL)
             plt.figure(figsize=(10, 6))
-            sns.scatterplot(x=df[f'{app} Total'], y=df['Total DL (Bytes)'] + df['Total UL (Bytes)'])
+            plt.pie(x=df[f'{app} Total'], y=df['Total DL (Bytes)'] + df['Total UL (Bytes)'])
             plt.title(f'Relationship between {app} and Total Data (DL+UL)')
             plt.xlabel(f'{app} Data (DL + UL)')
             plt.ylabel('Total Data (DL + UL)')
@@ -188,3 +188,40 @@ class ExploratoryDataAnalysis:
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
         plt.title('Correlation Matrix')
         plt.show()
+
+    def dimensionality_reduction(self):
+        """
+        Perform Principal Component Analysis (PCA) to reduce the dimensionality of the dataset and interpret results.
+
+        :param df: The DataFrame containing the dataset.
+        """
+        df, _ = self.variable_transformations()
+        # Standardizing the data before applying PCA
+        from sklearn.preprocessing import StandardScaler
+        features = ['total_duration', 'total_dl', 'total_ul', 'total_data']
+        x = df[features]
+        x_scaled = StandardScaler().fit_transform(x)
+
+        # PCA transformation
+        from sklearn.decomposition import PCA
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        pca = PCA(n_components=5)
+        principal_components = pca.fit_transform(x_scaled)
+        pca_df = pd.DataFrame(data=principal_components, columns=['Important1', 'Important2', 'Important3', 'Important4', 'Important5'])
+
+        plt.figure(figsize=(8, 6))
+        plt.scatter(pca_df['Important1'], pca_df['Important2'])
+        plt.title('PCA - Dimensionality Reduction')
+        plt.xlabel('Important1')
+        plt.ylabel('Important2')
+        plt.show()
+
+        # PCA interpretation
+        explained_variance = pca.explained_variance_ratio_
+        print("PCA Interpretation:")
+        print(f"1. Important1 explains {explained_variance[0]*100:.2f}% of the variance.")
+        print(f"2. Important2 explains {explained_variance[1]*100:.2f}% of the variance.")
+        print("3. The data is reduced to five principal components.")
+        print("4. PCA highlights the most influential variables in the dataset.")
