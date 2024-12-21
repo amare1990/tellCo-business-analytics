@@ -48,3 +48,12 @@ class UserEngagementAnalysis:
         kmeans = KMeans(n_clusters=k, random_state=42)
         agg_data['cluster'] = kmeans.fit_predict(normalized_data)
         return agg_data, kmeans
+
+    def compute_cluster_statistics(self, agg_data):
+        """Compute statistics for each cluster."""
+        stats = agg_data.groupby('cluster').agg({
+            'session_frequency': ['min', 'max', 'mean', 'sum'],
+            'session_duration': ['min', 'max', 'mean', 'sum'],
+            'session_traffic': ['min', 'max', 'mean', 'sum']
+        })
+        return stats
