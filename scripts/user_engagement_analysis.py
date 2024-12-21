@@ -41,3 +41,10 @@ class UserEngagementAnalysis:
       return agg_data, top_customers
 
 
+    def normalize_and_cluster(self, agg_data, k=3):
+        """Normalize metrics and perform k-means clustering."""
+        scaler = MinMaxScaler()
+        normalized_data = scaler.fit_transform(agg_data[['session_frequency', 'session_duration', 'session_traffic']])
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        agg_data['cluster'] = kmeans.fit_predict(normalized_data)
+        return agg_data, kmeans
