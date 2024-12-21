@@ -57,3 +57,19 @@ class UserEngagementAnalysis:
             'session_traffic': ['min', 'max', 'mean', 'sum']
         })
         return stats
+
+    def aggregate_traffic_per_app(self, data):
+        """Aggregate user total traffic per application."""
+        applications = {
+            'Social Media': ['Social Media DL (Bytes)', 'Social Media UL (Bytes)'],
+            'Google': ['Google DL (Bytes)', 'Google UL (Bytes)'],
+            'Email': ['Email DL (Bytes)', 'Email UL (Bytes)'],
+            'YouTube': ['Youtube DL (Bytes)', 'Youtube UL (Bytes)'],
+            'Netflix': ['Netflix DL (Bytes)', 'Netflix UL (Bytes)'],
+            'Gaming': ['Gaming DL (Bytes)', 'Gaming UL (Bytes)'],
+            'Other': ['Other DL (Bytes)', 'Other UL (Bytes)']
+        }
+        for application, value in applications.items():
+            app_traffic = data.groupby([value[0]+value[1], 'MSISDN/Number'])['session_traffic'].sum().reset_index()
+        top_users_per_app = app_traffic.sort_values('session_traffic', ascending=False).groupby('application').head(10)
+        return app_traffic, top_users_per_app
