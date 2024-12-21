@@ -121,6 +121,7 @@ class ExploratoryDataAnalysis:
             plt.title(f'Distribution of {col}')
             plt.xlabel(col)
             plt.ylabel('Frequency')
+            plt.savefig(f'notebooks/plots/univariants/hist_univariante_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
 
@@ -158,7 +159,7 @@ class ExploratoryDataAnalysis:
             plt.xlabel(f'{app} Data (DL + UL)', fontsize=12)
             plt.ylabel('Total Data (DL + UL)', fontsize=12)
             plt.grid(True)
-            plt.savefig(f'{app}_bivariate_analysis.png', dpi=300, bbox_inches='tight')  # Save the plot
+            plt.savefig(f'notebooks/plots/bivariantes/{app}_bivariate_analysis.png', dpi=300, bbox_inches='tight')  # Save the plot
             plt.show()
 
         print("Bivariate analysis plots saved successfully.")
@@ -199,7 +200,7 @@ class ExploratoryDataAnalysis:
         plt.figure(figsize=(10, 8))
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
         plt.title('Correlation Matrix')
-        plt.savefig('correlation_heatmap.png', dpi=300, bbox_inches='tight')  # Save the plot
+        plt.savefig('plots/correlation_heatmap.png', dpi=300, bbox_inches='tight')  # Save the plot
         plt.show()
 
         # Calculate the total data usage per application for the pie chart
