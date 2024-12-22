@@ -93,3 +93,13 @@ class UserEngagementAnalysis:
 
         return app_traffic, top_users_per_app
 
+
+    def plot_top_apps(self, app_traffic):
+        """Plot the top 3 most used applications."""
+        top_apps = app_traffic.groupby('application')['session_traffic'].sum().nlargest(3)
+        top_apps.plot(kind='bar', color=['blue', 'orange', 'green'])
+        plt.title('Top 3 Most Used Applications')
+        plt.xlabel('Application')
+        plt.ylabel('Total Traffic (Bytes)')
+        plt.savefig("plots/top_apps.png", dpi=300, bbox_inches='tight')
+        plt.show()
