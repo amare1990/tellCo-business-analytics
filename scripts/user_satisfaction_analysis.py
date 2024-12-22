@@ -101,3 +101,17 @@ class UserSatisfactionAnalyzer:
         self.experience_scores = experience_data[['MSISDN/Number', 'experience_score']]
         return self.experience_scores
 
+
+    def analyze_user_satisfaction(self):
+        """Combine engagement and experience scores into a single DataFrame."""
+        if self.engagement_scores is None or self.experience_scores is None:
+            raise ValueError("Engagement and experience scores must be computed first.")
+
+        satisfaction_df = pd.merge(
+            self.engagement_scores, self.experience_scores, on='MSISDN/Number', how='inner'
+        )
+        satisfaction_df['satisfaction_score'] = (
+            satisfaction_df['engagement_score'] + satisfaction_df['experience_score']) / 2
+
+        return satisfaction_df
+
