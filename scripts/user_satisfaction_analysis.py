@@ -8,10 +8,23 @@ from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-# import mysql.connector
+
+
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, Column, Integer, Float, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from scripts.user_engagement_analysis import UserEngagementAnalysis
 from scripts.user_experience_analysis import UserExperienceAnalyzer
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Define the base class for our SQLAlchemy model
+Base = declarative_base()
+
 
 class UserSatisfactionAnalyzer:
     def __init__(self, data):
@@ -24,6 +37,17 @@ class UserSatisfactionAnalyzer:
         self.data = data
         self.engagement_scores = None
         self.experience_scores = None
+
+        # Initialize database connection parameters from environment variables
+        self.db_host = os.getenv("DB_HOST")
+        self.db_port = os.getenv("DB_PORT")
+        self.db_name = os.getenv("DB_NAME")
+        self.db_user = os.getenv("DB_USER")
+        self.db_password = os.getenv("DB_PASSWORD")
+
+        # Database connection URL
+        self.db_url = f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+
 
 
 
@@ -152,5 +176,42 @@ class UserSatisfactionAnalyzer:
       }).reset_index()
 
       return clustered_df
+
+
+
+    def export_to_postgresql(self):
+        """Exports the final table to a PostgreSQL database using SQLAlchemy"""
+        # Create SQLAlchemy engine
+        engine = create_engine(self.db_url)
+
+        # Create all tables in the database
+        Base.metadata.create_all(engine)
+
+        # Create a session
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        _, satisfaction_df, _= self.analyze_user_satisfaction()
+
+        # Insert data into the database
+        for index, row in self.df.iterrows():
+            user_satisfaction = UserSatisfactionAnalyzer(
+                user_id=row['Bearer Id'],
+                engagement_score=row['engagement_score'],
+                experience_score=row['experience_score'],
+                satisfaction_score=row['satisfaction_score'],
+                cluster=row['cluster']
+            )
+            session.add(user_satisfaction)
+
+        # Commit the transaction
+        session.commit()
+
+        # Close the session
+        session.close()
+
+        print("Data exported successfully to PostgreSQL database.")
+
+
 
 
