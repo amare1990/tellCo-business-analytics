@@ -81,3 +81,24 @@ class UserExperienceAnalyzer:
         }).reset_index()
 
         return aggregated
+
+
+    def compute_top_bottom_frequent(self):
+        """
+        Compute and list 10 of the top, bottom, and most frequent:
+        - TCP values
+        - RTT values
+        - Throughput values
+
+        Returns:
+        dict: A dictionary with top, bottom, and frequent values for each metric.
+        """
+        results = {}
+        for column in ['TCP Retransmission', 'RTT', 'Throughput']:
+            sorted_values = self.data[column].sort_values()
+            results[column] = {
+                'Top_10 values': sorted_values.tail(10).tolist(),
+                'Bottom_10 values': sorted_values.head(10).tolist(),
+                'Most_frequent values': self.data[column].value_counts().head(10).index.tolist()
+            }
+        return results
