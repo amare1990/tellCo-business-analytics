@@ -116,7 +116,7 @@ class UserExperienceAnalyzer:
         tcp_average = self.data.groupby('Handset Type')['TCP Retransmission'].mean()
 
         # Plotting
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(8, 6))
         sns.barplot(x=throughput_distribution.index, y=throughput_distribution.values)
         plt.title('Average Throughput per Handset Type')
         plt.xlabel('Handset Type')
@@ -125,7 +125,7 @@ class UserExperienceAnalyzer:
         plt.savefig('plots/user_experience/throughput_per_handset.png', dpi=300, bbox_inches='tight')
         plt.show()
 
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(8, 6))
         sns.barplot(x=tcp_average.index, y=tcp_average.values)
         plt.title('Average TCP Retransmission per Handset Type')
         plt.xlabel('Handset Type')
@@ -135,3 +135,32 @@ class UserExperienceAnalyzer:
         plt.show()
 
         return {'throughput_distribution': throughput_distribution, 'tcp_average': tcp_average}
+
+
+    def kmeans_clustering_user_experience(self, k=3):
+        """
+        Perform k-means clustering to segment users into groups of experiences.
+
+        Parameters:
+        k (int): Number of clusters. Default is 3.
+
+        Returns:
+        pd.DataFrame: Data with cluster labels.
+        dict: Cluster descriptions.
+        """
+        # Prepare data
+        features = self.data[['TCP Retransmission', 'RTT', 'Throughput']]
+        scaler = MinMaxScaler()
+        normalized_data = scaler.fit_transform(features)
+
+        # K-means clustering
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        self.data['Cluster'] = kmeans.fit_predict(normalized_data)
+
+        # Cluster descriptions
+        cluster_summary = self.data.groupby('Cluster')[['TCP Retransmission', 'RTT', 'Throughput']].mean()
+        cluster_descriptions = {
+            i: f"Cluster {i}: {row.to_dict()}" for i, row in cluster_summary.iterrows()
+        }
+
+        return cluster_summary, cluster_descriptions
