@@ -102,3 +102,36 @@ class UserExperienceAnalyzer:
                 'Most_frequent values': self.data[column].value_counts().head(10).index.tolist()
             }
         return results
+
+    def distribution_and_averages_per_handset(self):
+        """
+        Compute and report:
+        - Distribution of average throughput per handset type.
+        - Average TCP retransmission per handset type.
+
+        Returns:
+        dict: Distribution and average statistics for throughput and TCP retransmission.
+        """
+        throughput_distribution = self.data.groupby('Handset Type')['Throughput'].mean()
+        tcp_average = self.data.groupby('Handset Type')['TCP Retransmission'].mean()
+
+        # Plotting
+        plt.figure(figsize=(12, 6))
+        sns.barplot(x=throughput_distribution.index, y=throughput_distribution.values)
+        plt.title('Average Throughput per Handset Type')
+        plt.xlabel('Handset Type')
+        plt.ylabel('Average Throughput (kbps)')
+        plt.xticks(rotation=45)
+        plt.savefig('plots/user_experience/throughput_per_handset.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+        plt.figure(figsize=(12, 6))
+        sns.barplot(x=tcp_average.index, y=tcp_average.values)
+        plt.title('Average TCP Retransmission per Handset Type')
+        plt.xlabel('Handset Type')
+        plt.ylabel('Average TCP Retransmission (Bytes)')
+        plt.xticks(rotation=45)
+        plt.savefig('plots/user_experience/TCP_per_handset.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+        return {'throughput_distribution': throughput_distribution, 'tcp_average': tcp_average}
