@@ -26,3 +26,9 @@ class UserSatisfactionAnalyzer:
         scaler = MinMaxScaler()
         normalized_data = scaler.fit_transform(agg_data[['session_frequency', 'session_duration', 'session_traffic']])
         return agg_data, normalized_data
+
+    def perform_clustering(self, normalized_data, k=3):
+        """Perform k-means clustering on normalized data."""
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        clusters = kmeans.fit_predict(normalized_data)
+        return clusters, kmeans
