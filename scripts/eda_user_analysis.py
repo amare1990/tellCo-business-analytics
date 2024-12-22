@@ -1,4 +1,4 @@
-import psycopg2
+# import psycopg2
 from sqlalchemy import create_engine
 import pandas as pd
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ import os
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 # Load environment variables from .env file
@@ -116,18 +117,22 @@ class ExploratoryDataAnalysis:
 
         for col in quantitative_cols:
             plt.figure(figsize=(10, 6))
-            sns.barplot(df[col], kde=True)
-            plt.title(f'Histogram of {col}')
+            sns.histplot(df[col], kde=True, bins=30, color='blue')
+            plt.title(f'Distribution of {col}')
             plt.xlabel(col)
             plt.ylabel('Frequency')
+            plt.savefig(f'plots/univariants/hist_univariante_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
 
-    def bivariate_analysis(self):
+
+    def bivariate_analysis(self, df):
         """
-        Perform bivariate analysis by exploring the relationship between each application and the total DL+UL data.
+        Perform bivariate analysis by exploring the relationship between each application's data
+        and the total DL+UL data using scatter plots.
         """
-        df, _ = self.variable_transformations()
+        # Ensure any required transformations are applied
+        df, _ = self.variable_transformations(df)
 
         # Define applications with corresponding DL and UL columns
         applications = {
@@ -140,24 +145,32 @@ class ExploratoryDataAnalysis:
             'Other': ['Other DL (Bytes)', 'Other UL (Bytes)']
         }
 
+        # Compute total data for each application and the overall total
+        df['Total Data (DL+UL)'] = df['Total DL (Bytes)'] + df['Total UL (Bytes)']
+
         for app, columns in applications.items():
             # Calculate total application data (DL + UL)
             df[f'{app} Total'] = df[columns[0]] + df[columns[1]]
 
             # Plot the relationship between application data and total data (DL+UL)
             plt.figure(figsize=(10, 6))
-            plt.pie(x=df[f'{app} Total'], y=df['Total DL (Bytes)'] + df['Total UL (Bytes)'])
-            plt.title(f'Relationship between {app} and Total Data (DL+UL)')
-            plt.xlabel(f'{app} Data (DL + UL)')
-            plt.ylabel('Total Data (DL + UL)')
+            plt.scatter(df[f'{app} Total'], df['Total Data (DL+UL)'], alpha=0.7)
+            plt.title(f'Relationship between {app} and Total Data (DL+UL)', fontsize=14)
+            plt.xlabel(f'{app} Data (DL + UL)', fontsize=12)
+            plt.ylabel('Total Data (DL + UL)', fontsize=12)
+            plt.grid(True)
+            plt.savefig(f'plots/bivariantes/{app}_bivariate_analysis.png', dpi=300, bbox_inches='tight')  # Save the plot
             plt.show()
+
+        print("Bivariate analysis plots saved successfully.")
+
 
     def correlation_analysis(self):
         """
-        Compute and interpret the correlation matrix for the given application data.
+        Compute and interpret the correlation matrix for the given application data and plot a pie chart.
         """
-        df, _ = self.variable_transformations()
-
+        # Ensure any required transformations are applied
+        df, _ = self.variable_transformations(df)
 
         # Define applications with corresponding DL and UL columns
         applications = {
@@ -187,7 +200,25 @@ class ExploratoryDataAnalysis:
         plt.figure(figsize=(10, 8))
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
         plt.title('Correlation Matrix')
+        plt.savefig('plots/correlation_heatmap.png', dpi=300, bbox_inches='tight')  # Save the plot
         plt.show()
+
+        # Calculate the total data usage per application for the pie chart
+        app_totals = {app: df[f'{app} Total'].sum() for app in applications}
+
+        # Plot the pie chart
+        plt.figure(figsize=(8, 8))
+        plt.pie(
+            app_totals.values(),
+            labels=app_totals.keys(),
+            autopct='%1.1f%%',
+            startangle=140,
+            colors=sns.color_palette('pastel')
+        )
+        plt.title('Percentage Contribution of Each Application')
+        plt.savefig('plots/application_pie_chart.png', dpi=300, bbox_inches='tight')  # Save the plot
+        plt.show()
+
 
     def dimensionality_reduction(self):
         """
@@ -197,25 +228,21 @@ class ExploratoryDataAnalysis:
         """
         df, _ = self.variable_transformations()
         # Standardizing the data before applying PCA
-        from sklearn.preprocessing import StandardScaler
-        features = ['total_duration', 'total_dl', 'total_ul', 'total_data']
-        x = df[features]
+        numeric_features = df.select_dtypes(include=['float64', 'int64']).columns
+        x = df[numeric_features]
         x_scaled = StandardScaler().fit_transform(x)
 
         # PCA transformation
-        from sklearn.decomposition import PCA
-        import pandas as pd
-        import matplotlib.pyplot as plt
-
         pca = PCA(n_components=5)
         principal_components = pca.fit_transform(x_scaled)
         pca_df = pd.DataFrame(data=principal_components, columns=['Important1', 'Important2', 'Important3', 'Important4', 'Important5'])
 
         plt.figure(figsize=(8, 6))
-        plt.scatter(pca_df['Important1'], pca_df['Important2'])
+        plt.scatter(pca_df['Important1'], pca_df['Important2'], pca_df['Important3'], alpha=0.3)
         plt.title('PCA - Dimensionality Reduction')
         plt.xlabel('Important1')
         plt.ylabel('Important2')
+        plt.savefig('plots/PCA-dimensionality_reduction.png', dpi=300, bbox_inches='tight')  # Save the plot
         plt.show()
 
         # PCA interpretation
@@ -223,5 +250,3 @@ class ExploratoryDataAnalysis:
         print("PCA Interpretation:")
         print(f"1. Important1 explains {explained_variance[0]*100:.2f}% of the variance.")
         print(f"2. Important2 explains {explained_variance[1]*100:.2f}% of the variance.")
-        print("3. The data is reduced to five principal components.")
-        print("4. PCA highlights the most influential variables in the dataset.")
