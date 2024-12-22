@@ -110,11 +110,28 @@ class UserSatisfactionAnalyzer:
         satisfaction_df = pd.merge(
             self.engagement_scores, self.experience_scores, on='MSISDN/Number', how='inner'
         )
+        merged_data = satisfaction_df
         satisfaction_df['satisfaction_score'] = (
             satisfaction_df['engagement_score'] + satisfaction_df['experience_score']) / 2
 
         # Get top 10 satisfied customers
         top10_customers = satisfaction_df.nlargest(10, 'satisfaction_score')
 
-        return satisfaction_df, top10_customers
+        return merged_data, satisfaction_df, top10_customers
+
+
+    def train_regression_model(self):
+        """Trains a regression model to predict the satisfaction score of a customer
+           based on engagement and experience score
+        """
+        X, satisfaction_df, _= self.analyze_user_satisfaction()
+        y = satisfaction_df
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Train a simple linear regression model
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+        print(f"Regression Model Coefficients: {model.coef_}")
+        print(f"Regression Model Intercept: {model.intercept_}")
+        return model
 
