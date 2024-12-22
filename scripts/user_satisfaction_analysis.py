@@ -1,12 +1,14 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 # import mysql.connector
-
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from scripts.user_engagement_analysis import UserEngagementAnalysis
 from scripts.user_experience_analysis import UserExperienceAnalyzer
@@ -42,3 +44,31 @@ class UserSatisfactionAnalyzer:
       clusters = kmeans.fit_predict(normalized_data)
 
       return normalized_data, kmeans, clusters
+
+
+    def assign_engagement_score(self):
+        """Assign engagement scores based on Euclidean distance from the least engaged cluster."""
+        # Aggregate metrics
+        user_engagement = UserEngagementAnalysis()
+        agg_data, _ = user_engagement.aggregate_metrics(self.data)
+
+        # Normalize and cluster
+        normalized_data, kmeans, clusters = self.normalize_and_cluster(
+            agg_data[['session_frequency', 'session_duration', 'session_traffic']]
+        )
+
+        # Assign cluster labels
+        agg_data['cluster'] = clusters
+
+        # Identify the least engaged cluster (based on sum of engagement metrics)
+        cluster_centers = kmeans.cluster_centers_
+        least_engaged_cluster_idx = np.argmin(cluster_centers.sum(axis=1))
+
+        # Calculate engagement scores
+        least_engaged_center = cluster_centers[least_engaged_cluster_idx]
+        agg_data['engagement_score'] = euclidean_distances(
+            normalized_data, least_engaged_center.reshape(1, -1)
+        ).flatten()
+
+        self.engagement_scores = agg_data[['MSISDN/Number', 'engagement_score']]
+        return self.engagement_scores
