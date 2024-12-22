@@ -72,3 +72,32 @@ class UserSatisfactionAnalyzer:
 
         self.engagement_scores = agg_data[['MSISDN/Number', 'engagement_score']]
         return self.engagement_scores
+
+
+
+    def assign_experience_score(self):
+        """Assign experience scores based on Euclidean distance from the worst experience cluster."""
+        user_experience = UserExperienceAnalyzer(self.data)
+
+        # Aggregate user experience data
+        experience_data = user_experience.aggregate_user_experience_data()
+
+        # Normalize and cluster
+        normalized_data, kmeans, clusters = self.normalize_and_cluster(experience_data)
+
+        # Assign cluster labels
+        experience_data['cluster'] = clusters
+
+        # Identify the worst experience cluster (based on specific domain logic, e.g., lowest performance metrics)
+        cluster_centers = kmeans.cluster_centers_
+        worst_experience_cluster_idx = np.argmin(cluster_centers.mean(axis=1))
+        worst_experience_center = cluster_centers[worst_experience_cluster_idx]
+
+        # Calculate experience scores
+        experience_data['experience_score'] = euclidean_distances(
+            normalized_data, worst_experience_center.reshape(1, -1)
+        ).flatten()
+
+        self.experience_scores = experience_data[['MSISDN/Number', 'experience_score']]
+        return self.experience_scores
+
