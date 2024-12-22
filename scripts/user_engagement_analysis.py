@@ -1,15 +1,11 @@
-import os
 import pandas as pd
-import numpy as np
-from sqlalchemy import create_engine
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
-from dotenv import load_dotenv
 
 class UserEngagementAnalysis:
     def __init__(self):
-        # Initialize database connection parameters from environment variables
+        # Initialize the class
         pass
 
     def aggregate_metrics(self, data):
@@ -103,3 +99,24 @@ class UserEngagementAnalysis:
         plt.ylabel('Total Traffic (Bytes)')
         plt.savefig("plots/top_apps.png", dpi=300, bbox_inches='tight')
         plt.show()
+
+    def determine_optimal_k(self, agg_data):
+        """Use the elbow method to determine the optimal number of clusters."""
+        scaler = MinMaxScaler()
+        normalized_data = scaler.fit_transform(agg_data[['session_frequency', 'session_duration', 'session_traffic']])
+        distortions = []
+        K = range(1, 10)
+        for k in K:
+            kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+            kmeans.fit(normalized_data)
+            distortions.append((kmeans.inertia_))
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(K, distortions, 'bo-', markersize=8)
+        plt.title('Elbow Method for Optimal k')
+        plt.xlabel('Number of Clusters (k)')
+        plt.ylabel('Distortion')
+        plt.savefig("plots/optimal_k.png", dpi=300, bbox_inches='tight')
+        plt.show()
+
+        return distortions
