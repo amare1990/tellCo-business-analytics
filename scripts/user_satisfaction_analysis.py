@@ -135,3 +135,22 @@ class UserSatisfactionAnalyzer:
         print(f"Regression Model Intercept: {model.intercept_}")
         return model
 
+
+    def kmeans_clustering(self):
+      """Performs k-means clustering on the engagement and experience scores"""
+      # Get the merged data and satisfaction scores from analyze_user_satisfaction
+      merged_data, satisfaction_df, _ = self.analyze_user_satisfaction()
+
+      # Perform KMeans clustering on the engagement and experience scores
+      kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
+      merged_data['cluster'] = kmeans.fit_predict(merged_data[['engagement_score', 'experience_score']])
+
+      # Clustered data: Group by 'cluster' and calculate mean satisfaction and experience scores
+      clustered_df = merged_data.groupby('cluster').agg({
+          'satisfaction_score': 'mean',
+          'experience_score': 'mean'
+      }).reset_index()
+
+      return clustered_df
+
+
