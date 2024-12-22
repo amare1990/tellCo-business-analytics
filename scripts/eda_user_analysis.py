@@ -77,7 +77,7 @@ class ExploratoryDataAnalysis:
         """
         df = self.treat_missing_values()
         # Segment users into top 5 decile classes based on total session duration
-        df['total_duration'] = df['Dur. (ms)']  # or df['Dur. (ms).1']
+        df['total_duration'] = df['Dur. (ms)']
         df['decile'] = pd.qcut(df['total_duration'], 5, labels=False) + 1
 
         # Compute total data (DL + UL) per decile class
