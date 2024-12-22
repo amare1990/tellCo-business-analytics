@@ -121,7 +121,7 @@ class ExploratoryDataAnalysis:
             plt.title(f'Distribution of {col}')
             plt.xlabel(col)
             plt.ylabel('Frequency')
-            plt.savefig(f'notebooks/plots/univariants/hist_univariante_{col}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'plots/univariants/hist_univariante_{col}.png', dpi=300, bbox_inches='tight')
             plt.show()
 
 
@@ -159,7 +159,7 @@ class ExploratoryDataAnalysis:
             plt.xlabel(f'{app} Data (DL + UL)', fontsize=12)
             plt.ylabel('Total Data (DL + UL)', fontsize=12)
             plt.grid(True)
-            plt.savefig(f'notebooks/plots/bivariantes/{app}_bivariate_analysis.png', dpi=300, bbox_inches='tight')  # Save the plot
+            plt.savefig(f'plots/bivariantes/{app}_bivariate_analysis.png', dpi=300, bbox_inches='tight')  # Save the plot
             plt.show()
 
         print("Bivariate analysis plots saved successfully.")
@@ -216,7 +216,7 @@ class ExploratoryDataAnalysis:
             colors=sns.color_palette('pastel')
         )
         plt.title('Percentage Contribution of Each Application')
-        plt.savefig('application_pie_chart.png', dpi=300, bbox_inches='tight')  # Save the plot
+        plt.savefig('plots/application_pie_chart.png', dpi=300, bbox_inches='tight')  # Save the plot
         plt.show()
 
 
@@ -242,7 +242,7 @@ class ExploratoryDataAnalysis:
         plt.title('PCA - Dimensionality Reduction')
         plt.xlabel('Important1')
         plt.ylabel('Important2')
-        plt.savefig('PCA-dimensionality_reduction.png', dpi=300, bbox_inches='tight')  # Save the plot
+        plt.savefig('plots/PCA-dimensionality_reduction.png', dpi=300, bbox_inches='tight')  # Save the plot
         plt.show()
 
         # PCA interpretation
