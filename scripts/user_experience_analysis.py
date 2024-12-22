@@ -116,7 +116,7 @@ class UserExperienceAnalyzer:
         tcp_average = self.data.groupby('Handset Type')['TCP Retransmission'].mean()
 
         # Plotting
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(12, 6))
         sns.barplot(x=throughput_distribution.index, y=throughput_distribution.values)
         plt.title('Average Throughput per Handset Type')
         plt.xlabel('Handset Type')
@@ -125,7 +125,7 @@ class UserExperienceAnalyzer:
         plt.savefig('plots/user_experience/throughput_per_handset.png', dpi=300, bbox_inches='tight')
         plt.show()
 
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(12, 6))
         sns.barplot(x=tcp_average.index, y=tcp_average.values)
         plt.title('Average TCP Retransmission per Handset Type')
         plt.xlabel('Handset Type')
