@@ -113,5 +113,8 @@ class UserSatisfactionAnalyzer:
         satisfaction_df['satisfaction_score'] = (
             satisfaction_df['engagement_score'] + satisfaction_df['experience_score']) / 2
 
-        return satisfaction_df
+        # Get top 10 satisfied customers
+        top10_customers = satisfaction_df.nlargest(10, 'satisfaction_score')
+
+        return satisfaction_df, top10_customers
 
