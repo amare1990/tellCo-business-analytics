@@ -32,3 +32,13 @@ class UserSatisfactionAnalyzer:
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
         clusters = kmeans.fit_predict(normalized_data)
         return clusters, kmeans
+
+    def compute_cluster_statistics(self, agg_data, clusters):
+        """Compute statistics for each cluster from engagement data."""
+        agg_data['cluster'] = clusters
+        stats = agg_data.groupby('cluster').agg({
+            'session_frequency': ['min', 'max', 'mean', 'sum'],
+            'session_duration': ['min', 'max', 'mean', 'sum'],
+            'session_traffic': ['min', 'max', 'mean', 'sum']
+        })
+        return stats
