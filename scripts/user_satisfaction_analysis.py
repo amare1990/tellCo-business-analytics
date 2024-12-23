@@ -141,7 +141,7 @@ class UserSatisfactionAnalyzer:
 
       # Perform KMeans clustering on the engagement and experience scores
       kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
-      merged_data['cluster'] = kmeans.fit_predict(satisfaction_df[['engagement_score', 'experience_score']])
+      merged_data['cluster'] = kmeans.fit_predict(merged_data[['engagement_score', 'experience_score']])
 
       # Clustered data: Group by 'cluster' and calculate mean satisfaction and experience scores
       clustered_df = merged_data.groupby('cluster').agg({

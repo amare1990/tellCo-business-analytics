@@ -5,6 +5,52 @@ import seaborn as sns
 
 
 st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
+
+# Corrected CSS
+css = """
+<style>
+/* Add margins and padding to the whole app */
+.block-container {
+    padding: 20px;
+    margin: 20px;
+    margin-right: 40px;
+    background-color: #596929;
+}
+
+/* Style the Streamlit title (h1) */
+h1 {
+    background-color: #4CAF50; /* Green background for the title */
+    color: white; /* White text */
+    padding: 15px;
+    text-align: center; /* Center-align the text */
+    margin: 0 auto; /* Center-align the block */
+    border-radius: 8px; /* Optional: Rounded corners */
+    max-width: calc(100% - 40px); /* Dynamic width based on margins */
+}
+
+/* Optional: Ensure consistent padding in the sidebar */
+.stSidebar {
+    padding: 20px;
+}
+
+/* Improve layout alignment */
+.css-1lcbmhc {
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+
+
+</style>
+"""
+st.markdown(css, unsafe_allow_html=True)
+
+
+# Inject CSS into the app
+st.markdown(css, unsafe_allow_html=True)
+
 st.title("tellCo. User Analytics")
 st.cache_data.clear()
 uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"], label_visibility="collapsed")
@@ -130,7 +176,7 @@ elif page == "User Engagement Analysis":
         st.pyplot(fig)
 
     else:
-        st.write("Please upload a CSV file to begin the analysis.")
+        st.sidebar("Please upload a CSV file to begin the analysis.")
 
 elif page == "Experience Analysis":
     # Import the UserExperienceAnalyzer class
@@ -181,8 +227,12 @@ elif page == "Satisfaction Analysis":
         # Initialize the UserSatisfactionAnalyzer
         satisfaction_analyzer = UserSatisfactionAnalyzer(data)
 
-        # Perform KMeans clustering on engagement and experience scores
-        clustered_df = satisfaction_analyzer.kmeans_clustering()
+        merged_data, satisfaction_df, _ = satisfaction_analyzer.analyze_user_satisfaction()
+
+        # Perform KMeans clustering on the engagement and experience scores
+        from sklearn.cluster import KMeans
+        kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+        merged_data['cluster'] = kmeans.fit_predict(merged_data['satisfaction_score'])
 
         # Visualize the clusters
         st.subheader("Clustered Satisfaction Analysis")
@@ -191,7 +241,7 @@ elif page == "Satisfaction Analysis":
             x='satisfaction_score',
             y='experience_score',
             hue='cluster',
-            data=clustered_df,
+            data=merged_data,
             palette='Set2',
             s=100,
             alpha=0.8,
@@ -204,6 +254,6 @@ elif page == "Satisfaction Analysis":
 
         # Display Cluster Summaries
         st.write("Cluster Summaries:")
-        st.dataframe(clustered_df)
+        st.dataframe(merged_data)
     else:
         st.warning("Please upload a CSV file to perform Satisfaction Analysis.")
