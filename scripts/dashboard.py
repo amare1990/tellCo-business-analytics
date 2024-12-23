@@ -32,7 +32,7 @@ def load_uploaded_file(uploaded_file):
         return pd.DataFrame()  # Return an empty DataFrame
 
 # Streamlit app
-st.title("Interactive Dashboard")
+st.title("tellCo. User Analytics")
 
 # File uploader widget
 uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
@@ -55,7 +55,8 @@ def user_overview_plot(data):
     st.bar_chart(data[['User', 'Satisfaction Score']].set_index('User'))
 
 
-
+# Footer
+st.sidebar.write("Dashboard by Your Amare Mekonnen")
 
 # Render pages
 if page == "User Overview Analysis":
