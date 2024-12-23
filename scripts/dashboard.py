@@ -40,12 +40,12 @@ if "data" not in st.session_state:
 else:
     data = st.session_state.data
 
-# Display data if loaded
-if not data.empty:
-    st.write("Preview of Uploaded Data:")
-    st.dataframe(data)
-else:
-    st.info("Please upload a CSV file to continue.")
+# # Display data if loaded
+# if not data.empty:
+#     st.write("Preview of Uploaded Data:")
+#     st.dataframe(data)
+# else:
+#     st.info("Please upload a CSV file to continue.")
 
 
 def plot_top_10_handsets(top_10_handsets):
@@ -141,3 +141,67 @@ elif page == "User Engagement Analysis":
         st.write(top_users_per_app)
     else:
         st.write("Please upload a CSV file to begin the analysis.")
+
+elif page == "Experience Analysis":
+    # Import the UserExperienceAnalyzer class
+    from user_experience_analysis import UserExperienceAnalyzer
+
+    # Check if data is loaded
+    if data is not None and not data.empty:
+        # Initialize the UserExperienceAnalyzer
+        experience_analyzer = UserExperienceAnalyzer(data)
+
+        # Aggregating data (required before other analyses)
+        aggregated_data = experience_analyzer.aggregate_user_experience_data()
+
+        # Create a sidebar for Experience Analysis options
+        st.sidebar.subheader("Experience Analysis Options")
+        analysis_option = st.sidebar.radio(
+            "Select Analysis Type",
+            ["Distribution and Averages per Handset", "K-Means Clustering"]
+        )
+
+        if analysis_option == "Distribution and Averages per Handset":
+            # Perform analysis and plot visualizations
+            pass
+            # st.subheader("Distribution and Averages per Handset")
+            # results = experience_analyzer.distribution_and_averages_per_handset()
+
+            # # Display plots for throughput and TCP retransmission
+            # st.image('plots/user_experience/throughput_per_handset.png', caption="Average Throughput per Handset Type")
+            # st.image('plots/user_experience/TCP_per_handset.png', caption="Average TCP Retransmission per Handset Type")
+
+            # # Optionally display the statistics in tabular form
+            # st.write("Throughput Distribution:")
+            # st.dataframe(results['throughput_distribution'])
+
+            # st.write("Average TCP Retransmission:")
+            # st.dataframe(results['tcp_average'])
+
+        elif analysis_option == "K-Means Clustering":
+            # K-Means Clustering
+            st.subheader("K-Means Clustering of User Experience")
+            num_clusters = st.sidebar.slider("Select Number of Clusters (k)", min_value=2, max_value=10, value=3)
+            cluster_summary, cluster_descriptions = experience_analyzer.kmeans_clustering_user_experience(k=num_clusters)
+
+            # Visualize Clustering Results
+            st.write("Cluster Summaries:")
+            st.dataframe(cluster_summary)
+
+            # Create scatter plot for clustering
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.scatterplot(
+                x='RTT', y='Throughput', hue='Cluster', data=data,
+                palette='Set2', ax=ax, s=100, alpha=0.8
+            )
+            ax.set_title("User Clusters (K-Means)")
+            ax.set_xlabel("Average RTT")
+            ax.set_ylabel("Average Throughput")
+            st.pyplot(fig)
+
+            # Display cluster descriptions
+            st.write("Cluster Descriptions:")
+            for cluster, description in cluster_descriptions.items():
+                st.write(description)
+    else:
+        st.warning("Please upload a CSV file to perform Experience Analysis.")
