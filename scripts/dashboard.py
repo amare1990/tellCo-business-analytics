@@ -47,3 +47,16 @@ if not data.empty:
     # Add your visualization logic here
 else:
     st.info("Please upload a CSV file to continue.")
+
+
+# Define plots
+def user_overview_plot(data):
+    st.header("User Overview Analysis")
+    st.bar_chart(data[['User', 'Satisfaction Score']].set_index('User'))
+
+
+
+
+# Render pages
+if page == "User Overview Analysis":
+    user_overview_plot(data)
