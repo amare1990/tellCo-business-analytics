@@ -10,11 +10,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
 
-from scripts.user_engagement_analysis import UserEngagementAnalysis
-from scripts.user_experience_analysis import UserExperienceAnalyzer
-
-
-
 class UserSatisfactionAnalyzer:
     def __init__(self, data):
         """
@@ -50,6 +45,7 @@ class UserSatisfactionAnalyzer:
     def assign_engagement_score(self):
         """Assign engagement scores based on Euclidean distance from the least engaged cluster."""
         # Aggregate metrics
+        from scripts.user_engagement_analysis import UserEngagementAnalysis
         user_engagement = UserEngagementAnalysis()
         agg_data, _ = user_engagement.aggregate_metrics(self.data)
 
@@ -78,6 +74,7 @@ class UserSatisfactionAnalyzer:
 
     def assign_experience_score(self):
         """Assign experience scores based on Euclidean distance from the worst experience cluster."""
+        from scripts.user_experience_analysis import UserExperienceAnalyzer
         user_experience = UserExperienceAnalyzer(self.data)
 
         # Aggregate user experience data
