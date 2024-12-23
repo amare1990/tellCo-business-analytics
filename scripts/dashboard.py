@@ -3,13 +3,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Configure the Streamlit page
-st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
 
-# Sidebar for navigation
-st.sidebar.title("Navigation")
+st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
+st.title("tellCo. User Analytics")
+uploaded_file = st.sidebar.file_uploader("Upload your dataset (CSV)", type=["csv"])
+
+# st.sidebar.title("Navigation")
 page = st.sidebar.selectbox(
-    "Select a Page",
+    "Select a Page you want to view",
     [
         "User Overview Analysis",
         "User Engagement Analysis",
@@ -18,11 +19,6 @@ page = st.sidebar.selectbox(
     ]
 )
 
-# Streamlit app title
-st.title("tellCo. User Analytics")
-
-# File uploader widget
-uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
 # Load data function
 def load_uploaded_file(uploaded_file):
@@ -51,15 +47,15 @@ else:
 def plot_top_10_handsets(top_10_handsets):
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x='usage_count', y='handset', data=top_10_handsets, ax=ax, palette='Blues_d')
-    ax.set_title('Top 10 Handsets by Usage')
+    ax.set_title('Top 10 Handsets by Usage\n')
     ax.set_xlabel('Usage Count')
     ax.set_ylabel('Handset')
     st.pyplot(fig)
 
 def plot_top_3_manufacturers(top_3_manufacturers):
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 5))
     sns.barplot(x='usage_count', y='manufacturer', data=top_3_manufacturers, ax=ax, palette='viridis')
-    ax.set_title('Top 3 Manufacturers by Usage')
+    ax.set_title('Top 3 Manufacturers by Usage\n')
     ax.set_xlabel('Usage Count')
     ax.set_ylabel('Manufacturer')
     st.pyplot(fig)
@@ -67,7 +63,7 @@ def plot_top_3_manufacturers(top_3_manufacturers):
 def plot_top_5_per_manufacturer(top_5_per_manufacturer):
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x='usage_count', y='handset', data=top_5_per_manufacturer, ax=ax, hue='manufacturer', palette='Set2')
-    ax.set_title('Top 5 Handsets per Manufacturer')
+    ax.set_title('Top 5 Handsets per Manufacturer\n')
     ax.set_xlabel('Usage Count')
     ax.set_ylabel('Handset')
     st.pyplot(fig)
@@ -129,16 +125,14 @@ elif page == "User Engagement Analysis":
         # Plot the top 3 most used applications
         st.subheader("Top 3 Most Used Applications")
         top_apps = app_traffic.groupby('application')['session_traffic'].sum().nlargest(3)
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6,2))
         top_apps.plot(kind='bar', color=['blue', 'orange', 'green'], ax=ax)
         ax.set_title('Top 3 Most Used Applications')
         ax.set_xlabel('Application')
         ax.set_ylabel('Total Traffic (Bytes)')
+        # ax.figure(figsize=(5, 2))
         st.pyplot(fig)
 
-        # Optionally, display the top 3 users per app as a table
-        st.subheader("Top 10 Users per Application")
-        st.write(top_users_per_app)
     else:
         st.write("Please upload a CSV file to begin the analysis.")
 
@@ -162,46 +156,67 @@ elif page == "Experience Analysis":
         )
 
         if analysis_option == "Distribution and Averages per Handset":
-            # Perform analysis and plot visualizations
-            pass
-            # st.subheader("Distribution and Averages per Handset")
-            # results = experience_analyzer.distribution_and_averages_per_handset()
+            from user_experience_analysis import UserExperienceAnalyzer
 
-            # # Display plots for throughput and TCP retransmission
-            # st.image('plots/user_experience/throughput_per_handset.png', caption="Average Throughput per Handset Type")
-            # st.image('plots/user_experience/TCP_per_handset.png', caption="Average TCP Retransmission per Handset Type")
+            if data is not None and not data.empty:
+                analyzer = UserExperienceAnalyzer(data)
+                agg_data = analyzer.aggregate_user_experience_data()
 
-            # # Optionally display the statistics in tabular form
-            # st.write("Throughput Distribution:")
-            # st.dataframe(results['throughput_distribution'])
+                st.subheader("Average Throughput and TCP Retransmission per Handset Type")
 
-            # st.write("Average TCP Retransmission:")
-            # st.dataframe(results['tcp_average'])
+                # Call the method and get results
+                results = analyzer.distribution_and_averages_per_handset()
+                throughput_distribution = results['throughput_distribution']
+                tcp_average = results['tcp_average']
+
+                # Plot average throughput per handset
+                st.write("### Average Throughput per Handset Type")
+                fig, ax = plt.subplots(figsize=(12, 6))
+                sns.barplot(x=throughput_distribution.index, y=throughput_distribution.values, ax=ax)
+                ax.set_title('Average Throughput per Handset Type')
+                ax.set_xlabel('Handset Type')
+                ax.set_ylabel('Average Throughput (kbps)')
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+
+                # Plot average TCP retransmission per handset
+                st.write("### Average TCP Retransmission per Handset Type")
+                fig, ax = plt.subplots(figsize=(12, 6))
+                sns.barplot(x=tcp_average.index, y=tcp_average.values, ax=ax)
+                ax.set_title('Average TCP Retransmission per Handset Type')
+                ax.set_xlabel('Handset Type')
+                ax.set_ylabel('Average TCP Retransmission (Bytes)')
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+            else:
+                st.warning("No data available. Please upload a CSV file.")
+
 
         elif analysis_option == "K-Means Clustering":
             # K-Means Clustering
-            st.subheader("K-Means Clustering of User Experience")
-            num_clusters = st.sidebar.slider("Select Number of Clusters (k)", min_value=2, max_value=10, value=3)
-            cluster_summary, cluster_descriptions = experience_analyzer.kmeans_clustering_user_experience(k=num_clusters)
+            pass
+            # st.subheader("K-Means Clustering of User Experience")
+            # num_clusters = st.sidebar.slider("Select Number of Clusters (k)", min_value=2, max_value=10, value=3)
+            # cluster_summary, cluster_descriptions = experience_analyzer.kmeans_clustering_user_experience(k=num_clusters)
 
-            # Visualize Clustering Results
-            st.write("Cluster Summaries:")
-            st.dataframe(cluster_summary)
+            # # Visualize Clustering Results
+            # st.write("Cluster Summaries:")
+            # st.dataframe(cluster_summary)
 
-            # Create scatter plot for clustering
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.scatterplot(
-                x='RTT', y='Throughput', hue='Cluster', data=data,
-                palette='Set2', ax=ax, s=100, alpha=0.8
-            )
-            ax.set_title("User Clusters (K-Means)")
-            ax.set_xlabel("Average RTT")
-            ax.set_ylabel("Average Throughput")
-            st.pyplot(fig)
+            # # Create scatter plot for clustering
+            # fig, ax = plt.subplots(figsize=(10, 6))
+            # sns.scatterplot(
+            #     x='RTT', y='Throughput', hue='Cluster', data=data,
+            #     palette='Set2', ax=ax, s=100, alpha=0.8
+            # )
+            # ax.set_title("User Clusters (K-Means)")
+            # ax.set_xlabel("Average RTT")
+            # ax.set_ylabel("Average Throughput")
+            # st.pyplot(fig)
 
-            # Display cluster descriptions
-            st.write("Cluster Descriptions:")
-            for cluster, description in cluster_descriptions.items():
-                st.write(description)
+            # # Display cluster descriptions
+            # st.write("Cluster Descriptions:")
+            # for cluster, description in cluster_descriptions.items():
+            #     st.write(description)
     else:
         st.warning("Please upload a CSV file to perform Experience Analysis.")
