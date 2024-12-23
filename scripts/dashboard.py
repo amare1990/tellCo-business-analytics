@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
 
 # Corrected CSS
@@ -51,8 +50,8 @@ page = st.sidebar.selectbox(
     [
         "User Overview Analysis",
         "User Engagement Analysis",
-        "Experience Analysis",
-        "Satisfaction Analysis"
+        "User Experience Analysis",
+        "User Satisfaction Analysis"
     ]
 )
 
@@ -167,7 +166,7 @@ elif page == "User Engagement Analysis":
     else:
         st.sidebar("Please upload a CSV file to begin the analysis.")
 
-elif page == "Experience Analysis":
+elif page == "User Experience Analysis":
     # Import the UserExperienceAnalyzer class
     from user_experience_analysis import UserExperienceAnalyzer
 
@@ -206,43 +205,56 @@ elif page == "Experience Analysis":
     else:
         st.warning("Please upload a CSV file to perform Experience Analysis.")
 
-elif page == "Satisfaction Analysis":
+elif page == "User Satisfaction Analysis":
     # Import the UserSatisfactionAnalyzer class
     from user_satisfaction_analysis import UserSatisfactionAnalyzer
     from user_engagement_analysis import UserEngagementAnalysis
 
+
     # Check if data is loaded
     if data is not None and not data.empty:
         # Initialize the UserSatisfactionAnalyzer
+        from user_satisfaction_analysis import UserSatisfactionAnalyze
         satisfaction_analyzer = UserSatisfactionAnalyzer(data)
 
-        merged_data, satisfaction_df, _ = satisfaction_analyzer.analyze_user_satisfaction()
+    # Compute engagement and experience scores
+    try:
+        engagement_scores = satisfaction_analyzer.assign_engagement_score()
+        experience_scores = satisfaction_analyzer.assign_experience_score()
+    except Exception as e:
+        st.error(f"Error computing engagement or experience scores: {e}")
+        st.stop()
 
-        # Perform KMeans clustering on the engagement and experience scores
-        from sklearn.cluster import KMeans
-        kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
-        merged_data['cluster'] = kmeans.fit_predict(merged_data['satisfaction_score'])
+    # Perform satisfaction analysis
+    try:
+        merged_data, satisfaction_df, top10_customers = satisfaction_analyzer.analyze_user_satisfaction()
+    except ValueError as e:
+        st.error(f"Error during satisfaction analysis: {e}")
+        st.stop()
 
-        # Visualize the clusters
-        st.subheader("Clustered Satisfaction Analysis")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.scatterplot(
-            x='satisfaction_score',
-            y='experience_score',
-            hue='cluster',
-            data=merged_data,
-            palette='Set2',
-            s=100,
-            alpha=0.8,
-            ax=ax
-        )
-        ax.set_title("K-Means Clustering on Satisfaction Scores")
-        ax.set_xlabel("Satisfaction Score")
-        ax.set_ylabel("Experience Score")
-        st.pyplot(fig)
+    # Visualize clusters using KMeans
+    from sklearn.cluster import KMeans
+    kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+    merged_data['cluster'] = kmeans.fit_predict(merged_data[['satisfaction_score']])
 
-        # Display Cluster Summaries
-        st.write("Cluster Summaries:")
-        st.dataframe(merged_data)
-    else:
-        st.warning("Please upload a CSV file to perform Satisfaction Analysis.")
+    st.subheader("Clustered Satisfaction Analysis")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.scatterplot(
+        x='satisfaction_score',
+        y='experience_score',
+        hue='cluster',
+        data=merged_data,
+        palette='Set2',
+        s=100,
+        alpha=0.8,
+        ax=ax
+    )
+    ax.set_title("K-Means Clustering on Satisfaction Scores")
+    ax.set_xlabel("Satisfaction Score")
+    ax.set_ylabel("Experience Score")
+    st.pyplot(fig)
+
+    st.write("Cluster Summaries:")
+    st.dataframe(merged_data)
+else:
+    st.warning("Please upload a CSV file to perform Satisfaction Analysis.")
