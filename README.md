@@ -1,11 +1,11 @@
 # TellCo. Business Analytics
 
-> tellCo-business-analytics is a data science project designed to statistically analyze and extract insights from the log database (telecom.sql) of TellCo, a mobile device service provider. The project aims to assist an investor interested in acquiring the TellCo telecom company by providing valuable user insights and exploratory data analysis (EDA). This analysis is implemented using Python and SQL to conduct a comprehensive user overview and EDA of TellCo's customers.
+> tellCo-business-analytics is a data science project designed to statistically analyze and extract insights from the log database (telecom.sql) of TellCo, a mobile device service provider. The project aims to assist an investor interested in acquiring the TellCo telecom company by providing valuable user insights and exploratory data analysis (EDA). This analysis is implemented using Python and SQL to conduct a comprehensive user overview and EDA of TellCo's users, user engagement analysis, user experience analysis, and user satisfaction analysis.
 
 ## Built With
 
 - Major languages used: Python3
-- Libraries: pandas, seaborn, matplotlib.pyplot, scikit-learn, SQLAlchemy, dotenv
+- Libraries: pandas, seaborn, matplotlib.pyplot, scikit-learn, SQLAlchemy, dotenv, streamlit
 - Tools and Technlogies used: jupyter notebook, Git, GitHub, Gitflow, VS code editor.
 
 ## Demonstration and Website
@@ -25,13 +25,14 @@ You can clone my project and use it freely and then contribute to this project.
 
 - After that you have to install all the necessary Python libraries and tools by running `pip install -r requirements.txt`
 - To run this project, run `jupyter notebook` command from the main directory of the repo
+- To interacttively visualize the analysis, run `streamlit run scripts/dashboard.py` command from the main directory of the repo
 
 ### Prerequisites
 
 - You have to install Python (version 3.8.10 minimum), pip, git, vscode.
 
 ### More information
-- You can refer to [this link]() to gain more insights about the report of this project.
+- You can refer to [this link](https://drive.google.com/file/d/1kPZcSFc5Fuln-NudllykNQpr8xQpGKXd/view?usp=drive_link) to gain more insights about the presentation of this project results.
 
 ## Authors
 
