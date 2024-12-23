@@ -9,7 +9,7 @@ st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
 # Corrected CSS
 css = """
 <style>
-/* Add margins and padding to the whole app */
+/* Add margins and padding to the whole app dashboard */
 .block-container {
     padding: 20px;
     background-color:rgb(129, 168, 129);
@@ -20,22 +20,17 @@ h1 {
 
     color: white; /* White text */
     padding: 15px;
-    text-align: center; /* Center-align the text */
-    margin: 0 auto; /* Center-align the block */
-    border-radius: 8px; /* Optional: Rounded corners */
-    max-width: calc(100% - 40px); /* Dynamic width based on margins */
+    text-align: center;
+    margin: 0 auto;
+    border-radius: 8px;
+    max-width: calc(100% - 40px);
 }
 
-/* Optional: Ensure consistent padding in the sidebar */
+/* sidebar css style */
 .stSidebar {
     padding: 20px;
     background-color:hsla(225, 22.20%, 96.50%, 0.97);
 }
-
-
-
-
-
 
 </style>
 """
