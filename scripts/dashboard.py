@@ -156,7 +156,7 @@ elif page == "User Engagement Analysis":
         # Plot the top 3 most used applications
         # st.subheader("Top 3 Most Used Applications")
         top_apps = app_traffic.groupby('application')['session_traffic'].sum().nlargest(3)
-        fig, ax = plt.subplots(figsize=(6,4))
+        fig, ax = plt.subplots(figsize=(10,4))
         top_apps.plot(kind='bar', color=['blue', 'orange', 'green'], ax=ax)
         ax.set_title('Top 3 Most Used Applications')
         ax.set_xlabel('Application')
