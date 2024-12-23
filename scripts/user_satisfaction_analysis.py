@@ -109,7 +109,7 @@ class UserSatisfactionAnalyzer:
             raise ValueError("Engagement and experience scores must be computed first.")
 
         satisfaction_df = pd.merge(
-            self.engagement_scores, self.experience_scores, on='MSISDN/Number', how='inner'
+            self.engagement_scores, self.experience_scores, on="MSISDN/Number", how='inner'
         )
         merged_data = satisfaction_df
         satisfaction_df['satisfaction_score'] = (
