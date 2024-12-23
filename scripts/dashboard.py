@@ -3,6 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Importing the UserOverviewAnalyzer and UserEngagementAnalysis classes
+from user_overview_analysis import UserOverviewAnalyzer
+from user_engagement_analysis import UserEngagementAnalysis
+
 # Configure the Streamlit page
 st.set_page_config(page_title="Data Insights Dashboard", layout="wide")
 
@@ -18,114 +22,83 @@ page = st.sidebar.selectbox(
     ]
 )
 
-import streamlit as st
-import pandas as pd
 
-# File uploader function
-@st.cache_data
-def load_uploaded_file(uploaded_file):
-    if uploaded_file is not None:
-        # Assuming the uploaded file is a CSV
-        data = pd.read_csv(uploaded_file)
-        return data
-    else:
-        st.warning("No file uploaded yet.")
-        return pd.DataFrame()  # Return an empty DataFrame
-
-# Streamlit app
+# Streamlit app title
 st.title("tellCo. User Analytics")
 
 # File uploader widget
 uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
 
 # Load data
+def load_uploaded_file(uploaded_file):
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
+        return data
+    else:
+        st.warning("No file uploaded yet.")
+        return pd.DataFrame()  # Return an empty DataFrame
+
 data = load_uploaded_file(uploaded_file)
 
-# Display data
+# Display data if loaded
 if not data.empty:
     st.write("Preview of Uploaded Data:")
     st.dataframe(data)
-    # Add your visualization logic here
 else:
     st.info("Please upload a CSV file to continue.")
 
+# Show analysis based on the selected page
+if page == "User Overview Analysis":
+    # User Overview Analysis Page
+    analyzer = UserOverviewAnalyzer()
+    analysis_results = analyzer.user_overview_analysis()
 
-# Define a function for visualizing top 10 handsets
-def plot_top_10_handsets(data):
-    st.subheader("Top 10 Handsets")
-    if data is not None and not data.empty:
-        fig, ax = plt.subplots()
-        sns.barplot(data=data, x="usage_count", y="handset", ax=ax, palette="Blues_r")
-        ax.set_title("Top 10 Handsets by Usage")
-        ax.set_xlabel("Usage Count")
-        ax.set_ylabel("Handset Type")
-        st.pyplot(fig)
-    else:
-        st.warning("No data available for Top 10 Handsets.")
-
-# Define a function for visualizing top 3 manufacturers
-def plot_top_3_manufacturers(data):
-    st.subheader("Top 3 Handset Manufacturers")
-    if data is not None and not data.empty:
-        fig, ax = plt.subplots()
-        sns.barplot(data=data, x="usage_count", y="manufacturer", ax=ax, palette="Greens_r")
-        ax.set_title("Top 3 Manufacturers by Usage")
-        ax.set_xlabel("Usage Count")
-        ax.set_ylabel("Manufacturer")
-        st.pyplot(fig)
-    else:
-        st.warning("No data available for Top 3 Manufacturers.")
-
-# Define a function for visualizing top 5 handsets per manufacturer
-def plot_top_5_per_manufacturer(data):
-    st.subheader("Top 5 Handsets per Manufacturer")
-    if data is not None and not data.empty:
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(
-            data=data,
-            x="usage_count",
-            y="handset",
-            hue="manufacturer",
-            dodge=False,
-            ax=ax,
-            palette="coolwarm"
+    if analysis_results:
+        st.sidebar.radio(
+            "Choose a page for User Overview Analysis",
+            ["Top 10 Handsets", "Top 3 Manufacturers", "Top 5 Handsets per Manufacturer"]
         )
-        ax.set_title("Top 5 Handsets by Top 3 Manufacturers")
-        ax.set_xlabel("Usage Count")
-        ax.set_ylabel("Handset")
-        st.pyplot(fig)
+
+        selected_page = st.sidebar.radio(
+            "Choose a page",
+            ["Top 10 Handsets", "Top 3 Manufacturers", "Top 5 Handsets per Manufacturer"]
+        )
+
+        if selected_page == "Top 10 Handsets":
+            plot_top_10_handsets(analysis_results["top_10_handsets"])
+        elif selected_page == "Top 3 Manufacturers":
+            plot_top_3_manufacturers(analysis_results["top_3_manufacturers"])
+        elif selected_page == "Top 5 Handsets per Manufacturer":
+            plot_top_5_per_manufacturer(analysis_results["top_5_per_manufacturer"])
     else:
-        st.warning("No data available for Top 5 Handsets per Manufacturer.")
+        st.warning("No data available for visualization.")
 
-# Import your UserOverviewAnalyzer class
-from user_overview_analysis import UserOverviewAnalyzer
+elif page == "User Engagement Analysis":
+    # User Engagement Analysis Page
+    user_analysis = UserEngagementAnalysis()
 
-# Initialize the analyzer
-analyzer = UserOverviewAnalyzer()
-# Run the analysis and get the results
-analysis_results = analyzer.user_overview_analysis()
+    if uploaded_file is not None:
+        # Read the uploaded file into a DataFrame
+        data = pd.read_csv(uploaded_file)
 
-# Visualize the results
-if analysis_results:
-    st.sidebar.title("Navigation")
-    selected_page = st.sidebar.radio(
-        "Choose a page",
-        ["Top 10 Handsets", "Top 3 Manufacturers", "Top 5 Handsets per Manufacturer"]
-    )
+        # Aggregating the data based on customer ID and metrics
+        agg_data, top_customers = user_analysis.aggregate_metrics(data)
 
-    if selected_page == "Top 10 Handsets":
-        plot_top_10_handsets(analysis_results["top_10_handsets"])
-    elif selected_page == "Top 3 Manufacturers":
-        plot_top_3_manufacturers(analysis_results["top_3_manufacturers"])
-    elif selected_page == "Top 5 Handsets per Manufacturer":
-        plot_top_5_per_manufacturer(analysis_results["top_5_per_manufacturer"])
-else:
-    st.warning("No data available for visualization.")
+        # Aggregating traffic data per application
+        app_traffic, top_users_per_app = user_analysis.aggregate_traffic_per_app(data)
 
+        # Plot the top 3 most used applications
+        st.subheader("Top 3 Most Used Applications")
+        top_apps = app_traffic.groupby('application')['session_traffic'].sum().nlargest(3)
+        fig, ax = plt.subplots()
+        top_apps.plot(kind='bar', color=['blue', 'orange', 'green'], ax=ax)
+        ax.set_title('Top 3 Most Used Applications')
+        ax.set_xlabel('Application')
+        ax.set_ylabel('Total Traffic (Bytes)')
+        st.pyplot(fig)
 
-# Footer
-st.sidebar.write("Dashboard by Your Amare Mekonnen")
-
-# # Render pages
-# if page == "User Overview Analysis":
-#     user_overview_plot(data)
+        # Optionally, display the top 3 users per app as a table
+        st.subheader("Top 10 Users per Application")
+        st.write(top_users_per_app)
+    else:
+        st.write("Please upload a CSV file to begin the analysis.")
