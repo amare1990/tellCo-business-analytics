@@ -12,14 +12,12 @@ css = """
 /* Add margins and padding to the whole app */
 .block-container {
     padding: 20px;
-    margin: 20px;
-    margin-right: 40px;
-    background-color: #596929;
+    background-color:rgb(129, 168, 129);
 }
 
 /* Style the Streamlit title (h1) */
 h1 {
-    background-color: #4CAF50; /* Green background for the title */
+
     color: white; /* White text */
     padding: 15px;
     text-align: center; /* Center-align the text */
@@ -31,14 +29,10 @@ h1 {
 /* Optional: Ensure consistent padding in the sidebar */
 .stSidebar {
     padding: 20px;
+    background-color:hsla(225, 22.20%, 96.50%, 0.97);
 }
 
-/* Improve layout alignment */
-.css-1lcbmhc {
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-}
+
 
 
 
